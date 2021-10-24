@@ -86,8 +86,8 @@ dux  = u; duz = u;
 disp('#### Begin time loop ####')
 f = waitbar(0, 'Starting');
 
-disp('####### Begin shot loop #######')
 
+% Absorbing Boundary Conditions.
 
 g_z=ones(nz);
 g_x=ones(nx);
@@ -108,6 +108,7 @@ g_x=ones(nx);
      end
   end
 
+disp('####### Begin shot loop #######')
 
 
 for is=1:length(shotp)
