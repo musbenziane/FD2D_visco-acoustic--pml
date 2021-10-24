@@ -1,0 +1,19 @@
+clear; clc; close all;
+
+nx   = 500;
+cz   = 500;
+
+c0   = 2000;
+c1   = 1500;
+cutL = 300;
+cutR = 400;
+
+
+c  = ones(nz,nx) * c0;
+c(:,cutL:curR) = c1;
+
+
+% Degine model
+c       = ones(nz,nx)*2000; % c(300:400,:) = 1500; c(100:200,:) = 1500;
+%rho     = ones(nx,1)*1800; rho(300:400) = 1000;
+%k       = 1./rho;
