@@ -93,7 +93,7 @@ g_z=ones(nz);
 g_x=ones(nx);
 
   for k=1:gWidth
-     att        = exp(-(0.8*(gWidth-k)/gWidth)^2);
+     att        = exp(-(0.06*(gWidth-k)/gWidth)^2);
      g_z(k)     = att;
      g_z(nz-k+1)= att;
      
