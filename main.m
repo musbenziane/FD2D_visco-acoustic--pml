@@ -11,27 +11,27 @@ A = textscan(fp,formatSpec);
 fclose(fp); 
 
 %Parsing parameters
-nt    = A{1}(1);
-nx    = A{1}(2);
-nz    = A{1}(3);
-dx    = A{1}(4);
-dz    = A{1}(5);
-dt    = A{1}(6);
-f0    = A{1}(7);
-insrc = A{1}(8); % if 1 shot is slected, it will be at this position
-isnap = A{1}(9);
-nshot = A{1}(10);
-shotz = A{1}(11);
-nrec  = A{1}(12);
-gWidth= A{1}(13);
+nt       = A{1}(1);
+nx       = A{1}(2);
+nz       = A{1}(3);
+dx       = A{1}(4);
+dz       = A{1}(5);
+dt       = A{1}(6);
+f0       = A{1}(7);
+insrc    = A{1}(8); % if 1 shot is slected, it will be at this position
+isnap    = A{1}(9);
+nshot    = A{1}(10);
+shotz    = A{1}(11);
+nrec     = A{1}(12);
+gWidth   = A{1}(13);
+gWidthz  = A{1}(14);
+attConst = A{1}(15);
 
-nxs   = nx;
-nx    = nx + 2 * gWidth;
+sp    = floor((nx-2*gWidth)/(nrec));
+rec   = gWidth+1:sp:nx-gWidth-1;
 
-sp    = floor(nxs/nrec);
-rec   = gWidth:sp:nx;
-sp    = floor(nxs/nshot);
-shotp = gWidth:sp:nx - 2-gWidth;
+sp    = floor(nx/nshot);
+shotp = gWidth:sp:nx-gWidth;
 
 % shot positions
 if nshot==1
@@ -64,20 +64,23 @@ disp('####################################################################')
 disp('####                    Reading Model Files                     ####')
 disp('####################################################################')
 
-f     = fopen("c.bin","r");
+f     = fopen("Arid_vp","r");
 c     = fread(f,"float32");
 fclose(f);
-c     = reshape(c,nz,nx);
+
 
 cSize = [nz nx];
 mSize = size(c);
-if (mSize(1) ~= cSize(1) || mSize(2) ~= cSize(2))
+
+try
+    c     = reshape(c,nz,nx);
+catch
     error_message = [ 'The model size does not match the computational domain size.\n' , ...
                   'Generate a new model.\n' , ...
                   'Program has been terminated' ];
     error( 'o:t' , error_message );
-end
 
+end
 lam_min = min(min(c))/(f0*2.5);
 gppw    = lam_min/dx;
 tol     = 10;
@@ -108,29 +111,29 @@ else
     disp('####                Spatial sampling seems fine                 ####')
 end
 disp('####################################################################')
-u    = zeros(nz,nx);
-uold = zeros(nz,nx);
-dux  = u; duz = u;
 
 
 % Absorbing Boundary Conditions.
 
-g_z=ones(nz);
-g_x=ones(nx);
+g_z      = ones(nz);
+g_x      = ones(nx);
 
   for k=1:gWidth
-     att        = exp(-(0.06*(gWidth-k)/gWidth)^2);
-     g_z(k)     = att;
+     att        = exp(-(attConst*(gWidth-k)/gWidth)^2);
      g_z(nz-k+1)= att;
-     
      g_x(k)     = att;
      g_x(nx-k+1)= att;
   end
   
+  for k=1:gWidthz
+     att        = exp(-(attConst*(gWidthz-k)/20)^2);
+     g_z(k)     = att;
+  end
+  
   gzx = ones(nz,nx);
-  for i2=1:nx
-     for i1=1:nz
-        gzx(i1,i2) = g_z(i1) .* g_x(i2);
+  for ix=1:nx
+     for iz=1:nz
+        gzx(iz,ix) = g_z(iz) .* g_x(ix);
      end
   end
 fprintf('\n');
@@ -139,7 +142,8 @@ disp('####                      Begin shot loop                       ####')
 disp('####################################################################')
 
 w1 = waitbar(0, 'Starting');
-for is=1:length(shotp)
+
+for is=1:nshot
     
 
  
@@ -150,11 +154,15 @@ for is=1:length(shotp)
     waitbar(is/nshot, w1, sprintf('Shot loop progress: %d / %d', is,nshot));
 
     k = 1;
-    shot_g =  zeros(nt,length(rec));  
-   
+    shot_g =  zeros(nt,nrec);  
+    u    = zeros(nz,nx);
+    uold = zeros(nz,nx);
+    dux  = u; duz = u;
+
     %####################################################################
     %####                      Begin time loop                       ####
     %####################################################################
+    
     
     for it=2:nt
         unew = zeros(nz,nx);
@@ -173,7 +181,7 @@ for is=1:length(shotp)
         u    = unew .* gzx;
         
         
-        for ir=1:length(rec)
+        for ir=1:nrec
             shot_g(it,ir) = unew(2,rec(ir));
         end
         if (mod(it,isnap)==0)
@@ -191,6 +199,7 @@ for is=1:length(shotp)
     %####                      Output snapshot                       ####
     %####                      & seismograms                         ####
     %####################################################################
+    
     filenameU  = strcat("OUTPUT/field_",mat2str(is),".bin");
     filenameSG = strcat("OUTPUT/seism_",mat2str(is),".bin");
     
