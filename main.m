@@ -1,7 +1,10 @@
 clear; close all; clc;
+diary 'fd2dacoustic.log'
+diary on
+disp('####################################################################')
+disp('####                    Reading Parameters                      ####')
+disp('####################################################################')
 
-
-disp('###### Reading Parameters ######')
 fp = fopen("para.in","r");
 formatSpec = "%f %s";
 A = textscan(fp,formatSpec);
@@ -39,7 +42,28 @@ else
     isrc(2,:) = shotp;
 end
 
-disp('##### Reading Model Files ######')
+fprintf('\n');
+disp('####################################################################')
+disp('####                  Simulation parameters:                    ####')
+fprintf('####                  nt            ->   %d                          \n',nt);
+fprintf('####                  dt            ->   %1.2E                       \n',dt);
+fprintf('####                  nx            ->   %d                          \n',nx);
+fprintf('####                  nz            ->   %d                          \n',nz);
+fprintf('####                  nx            ->   %d                          \n',nx);
+fprintf('####                  dz            ->   %d                          \n',nz);
+fprintf('####                  dx            ->   %d                          \n',nx);
+fprintf('####                  Ricker f0     ->   %d                          \n',f0);
+fprintf('####                  Sponge size   ->   %d                          \n',gWidth);
+fprintf('####                  Shots num     ->   %d                          \n',nshot);
+fprintf('####                  Receiver num  ->   %d                          \n',nrec);
+fprintf('####                  Snap interval ->   %d                          \n',isnap);
+disp('####################################################################')
+fprintf('\n');
+
+disp('####################################################################')
+disp('####                    Reading Model Files                     ####')
+disp('####################################################################')
+
 f     = fopen("c.bin","r");
 c     = fread(f,"float32");
 fclose(f);
@@ -63,22 +87,27 @@ T       = 1/f0;
 
 source  = (ricker(f0,nt,dt));
 
-disp('########## CFL CHECK ##########');
+fprintf('\n');
+disp('####################################################################')
+disp('####                     CFL Creterion check                    ####')
+
 cfl = (dt/dx)*max(max(c));
 if (cfl>.9)
-    error('Simulation unstable, decrease dt.');
+    error('####             Simulation unstable, decrease dt.              ####');
 else
-    disp('Simulation is stable');
+    disp('####                     Simulation is stable                   ####')
 end
+disp('####################################################################')
 
-disp('# SPATIAL DISCRETEZATION CHECK #');
-
+fprintf('\n');
+disp('####################################################################')
+disp('####                SPATIAL DISCRETEZATION CHECK                ####')
 if (gppw<tol)
-    error('Less than 8 grid points per wavelength are used, you risk numerical dispersion')
+    error('####    Numerical dispersion might be present, decrease dx|dz   ####')
 else
-    disp('More than 8 grid points per wavelength are used, you are good');
+    disp('####                Spatial sampling seems fine                 ####')
 end
-
+disp('####################################################################')
 u    = zeros(nz,nx);
 uold = zeros(nz,nx);
 dux  = u; duz = u;
@@ -104,8 +133,10 @@ g_x=ones(nx);
         gzx(i1,i2) = g_z(i1) .* g_x(i2);
      end
   end
-
-disp('####### Begin shot loop #######')
+fprintf('\n');
+disp('####################################################################')
+disp('####                      Begin shot loop                       ####')
+disp('####################################################################')
 
 w1 = waitbar(0, 'Starting');
 for is=1:length(shotp)
@@ -120,8 +151,11 @@ for is=1:length(shotp)
 
     k = 1;
     shot_g =  zeros(nt,length(rec));  
+   
+    %####################################################################
+    %####                      Begin time loop                       ####
+    %####################################################################
     
-    disp('####### Begin time loop #######')    
     for it=2:nt
         unew = zeros(nz,nx);
 
@@ -152,6 +186,11 @@ for is=1:length(shotp)
 
     end
     
+    
+    %####################################################################
+    %####                      Output snapshot                       ####
+    %####                      & seismograms                         ####
+    %####################################################################
     filenameU  = strcat("OUTPUT/field_",mat2str(is),".bin");
     filenameSG = strcat("OUTPUT/seism_",mat2str(is),".bin");
     
@@ -164,3 +203,14 @@ for is=1:length(shotp)
     fclose(f1); fclose(f2);
     
 end
+
+fprintf('\n');
+
+disp('####################################################################')
+disp('####                     Program is ending                     ####')
+disp('####                   files are in OUTPUT/                    ####')
+disp('####                  log file: fd2dacoustic.log               ####')
+disp('####################################################################')
+
+
+diary off
