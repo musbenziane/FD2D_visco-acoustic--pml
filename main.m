@@ -83,9 +83,6 @@ u    = zeros(nz,nx);
 uold = zeros(nz,nx);
 dux  = u; duz = u;
 
-disp('#### Begin time loop ####')
-f = waitbar(0, 'Starting');
-
 
 % Absorbing Boundary Conditions.
 
@@ -110,13 +107,21 @@ g_x=ones(nx);
 
 disp('####### Begin shot loop #######')
 
-
+w1 = waitbar(0, 'Starting');
 for is=1:length(shotp)
     
+
+ 
+    w2 = waitbar(0, 'Starting');
+    pos_w1=get(w1,'position');
+    pos_w2=[pos_w1(1) pos_w1(2)+pos_w1(4) pos_w1(3) pos_w1(4)];
+    set(w2,'position',pos_w2,'doublebuffer','on')
+    waitbar(is/nshot, w1, sprintf('Shot loop progress: %d / %d', is,nshot));
+
     k = 1;
     shot_g =  zeros(nt,length(rec));  
-    disp('####### Begin time loop #######')    
     
+    disp('####### Begin time loop #######')    
     for it=2:nt
         unew = zeros(nz,nx);
 
@@ -143,7 +148,7 @@ for is=1:length(shotp)
             k = k + 1;
 
         end
-        waitbar(it/nt, f, sprintf('Computation in progress: %d %%', floor(it/nt*100)));
+        waitbar(it/nt, w2, sprintf('Computation in progress: %d %%', floor(it/nt*100)));
 
     end
     
