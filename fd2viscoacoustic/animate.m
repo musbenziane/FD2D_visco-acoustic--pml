@@ -18,7 +18,7 @@ nx = nx + npml*2;
 nz = nz + npml;
 
 f = fopen('OUTPUT/field_P_1.bin','r');
-U = fread(f, 'float64');
+U = fread(f, 'float32');
 fclose(f);
 U = reshape(U,ns,nz,nx);
 
@@ -35,7 +35,7 @@ for is=1:ns
     imagesc(reshape(data(is,:,:),nz,nx));   
     colormap(redblue);
     %caxis([-6e-15 6e-15])
-    caxis([-max(data(200,:,:),[],'all')  max(data(200,:,:),[],'all') ])
+    caxis([-max(data(50,:,:),[],'all')  max(data(50,:,:),[],'all') ])
 
     colorbar
 

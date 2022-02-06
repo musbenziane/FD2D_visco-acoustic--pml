@@ -1,3 +1,25 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% FD2D ViscoAcoustic with PML                                             %%
+%% Author: Mus Benziane                                                    %%
+%%                                                                         %%
+%% Input parameter: para.in                                                %%
+%% Model files (in Mod_files/):                                            %% 
+%% c.bin rho.bin qf.bin  (single precision c-style binary)                 %%
+%%                                                                         %%
+%% Acquisition files in (Acqui/):                                          %%
+%% Generate with acqui_gen.me | format (ASCII):                            %%
+%% z1 x1                                                                   %%
+%% z2 x2                                                                   %%
+%% .  .                                                                    %%
+%% zn xn                                                                   %%
+%%(same format for both source and receivers' acquisition geometery.       %%
+%%                                                                         %%
+%% Output files (single precision) in OUTPUT/                              %% 
+%%                       snapshots | shot gather                           %%
+%% field_(P,W,U)_(shot number).bin | seis_(p,w,u)_(shot number).bin        %%
+%% P: Pressure | W,U: Particle velocity along Z and X respectively         %%                    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
 clear; close all; clc;
 
 try
@@ -313,10 +335,10 @@ for is=1:nshot
     filenameSG = strcat("OUTPUT/seis_P_",mat2str(is),".bin");
     
     f1         = fopen(filenameU,"w");
-    fwrite(f1,P,'float64');
+    fwrite(f1,P,'float32');
     
     f2         = fopen(filenameSG,"w");
-    fwrite(f2,seis_p,'float64');
+    fwrite(f2,seis_p,'float32');
     
     fclose(f1); fclose(f2);
     
@@ -325,10 +347,10 @@ for is=1:nshot
     filenameSG = strcat("OUTPUT/seis_W_",mat2str(is),".bin");
     
     f1         = fopen(filenameU,"w");
-    fwrite(f1,W,'float64');
+    fwrite(f1,W,'float32');
     
     f2         = fopen(filenameSG,"w");
-    fwrite(f2,seis_w,'float64');
+    fwrite(f2,seis_w,'float32');
     
     fclose(f1); fclose(f2);
     
@@ -336,10 +358,10 @@ for is=1:nshot
     filenameSG = strcat("OUTPUT/seis_U_",mat2str(is),".bin");
     
     f1         = fopen(filenameU,"w");
-    fwrite(f1,U,'float64');
+    fwrite(f1,U,'float32');
     
     f2         = fopen(filenameSG,"w");
-    fwrite(f2,seis_u,'float64');
+    fwrite(f2,seis_u,'float32');
     
     fclose(f1); fclose(f2);
     

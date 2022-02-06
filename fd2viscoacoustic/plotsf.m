@@ -24,8 +24,8 @@ ircv     = round((rcvpos(1,:))/dx+1); % rcv indices (1)
 jrcv     = round((rcvpos(2,:))/dx+1); % rcv indices (2)
 nrcv     = length(ircv);              % rcv number
 
-f = fopen('OUTPUT/seis_1.bin','r');
-U = fread(f, 'float64');
+f = fopen('OUTPUT/seis_P_1.bin','r');
+U = fread(f, 'float32');
 fclose(f);
 
 U = reshape(U,nt,nrcv);
