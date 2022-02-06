@@ -66,7 +66,7 @@ z       = 0:dx:(nz-1)*dx;
 fid      = fopen("Acqui/rcv.acqui","r");
 format   = "%f %f";
 sizeX    = [2 inf];
-rcvpos     = fscanf(fid,format, sizeX);
+rcvpos   = fscanf(fid,format, sizeX);
 fclose(fid);
 
 fid      = fopen("Acqui/src.acqui","r");
@@ -169,7 +169,7 @@ lam_min = min(min(c))/(f0*2.5);
 gppw    = lam_min/dx;
 tol     = 12;
 if (gppw<tol)
-    error('####    Numerical dispersion might be present, decrease dx|dz   ####')
+    error('####    Numerical dispersion might be present, decrease dx|dz  ####')
 else
     disp('####                Spatial sampling seems fine                 ####')
 end
@@ -236,7 +236,7 @@ for is=1:nshot
 
  
     disp('####################################################################')
-    fprintf('####                      Shot number %d                        ####\n',is);
+    fprintf('####                      Shot number %d                     ####\n',is);
     disp('####################################################################')
     
     w1 = waitbar(0, 'Starting');
@@ -285,7 +285,7 @@ for is=1:nshot
                 p(iz,ix) = pz(iz,ix) + px(iz,ix); 
                   
                 temp     = dt/(rho(iz,ix)*dx);
-                w(iz,ix) = (1-dt*sigmaZ(iz)) * w(iz,ix)-temp   * ...
+                w(iz,ix) = (1-dt*sigmaZ(iz)) * w(iz,ix)-temp   *...
                                     (c1*(p(iz+1,ix)-p(iz,ix))  +...
                                      c2*(p(iz+2,ix)-p(iz-1,ix))+...  
                                      c3*(p(iz+3,ix)-p(iz-2,ix))+...
@@ -293,7 +293,7 @@ for is=1:nshot
                   
                   
                 temp     = dt/(rho(iz,ix)*dx);
-                u(iz,ix) = (1-dt*sigmaX(ix)) * u(iz,ix) - temp  * ...
+                u(iz,ix) = (1-dt*sigmaX(ix)) * u(iz,ix) - temp  *...
                                     (c1*(p(iz,ix)-p(iz,ix-1))   +...
                                      c2*(p(iz,ix+1)-p(iz,ix-2)) +...  
                                      c3*(p(iz,ix+2)-p(iz,ix-3)) +...
@@ -372,7 +372,7 @@ fprintf('\n');
 disp('####################################################################')
 disp('####                     Program is ending                      ####')
 disp('####                   files are in OUTPUT/                     ####')
-disp('####                  log file: fd2dacoustic.log                ####')
+disp('####                  log file: fd2dviscoacoustic.log           ####')
 disp('####################################################################')
 
 
