@@ -2,17 +2,17 @@
 %% FD2D ViscoAcoustic with PML                                             %%
 %% Author: Mus Benziane                                                    %%
 %%                                                                         %%
-%% Input parameter: para.in                                                %%
+%% Input parameters file      : para.in                                    %%
 %% Model files (in Mod_files/):                                            %% 
 %% c.bin rho.bin qf.bin  (single precision c-style binary)                 %%
 %%                                                                         %%
 %% Acquisition files in (Acqui/):                                          %%
-%% Generate with acqui_gen.me | format (ASCII):                            %%
+%% Generate with acqui_gen.m | format (ASCII):                             %%
 %% z1 x1                                                                   %%
 %% z2 x2                                                                   %%
 %% .  .                                                                    %%
 %% zn xn                                                                   %%
-%% same format for both source and receivers' acquisition geometery.       %%
+%% same format for both sources and receivers acquisition geometery.       %%
 %%                                                                         %%
 %% Output files (single precision) in OUTPUT/                              %% 
 %%                       snapshots | shot gather                           %%
