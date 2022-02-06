@@ -1,6 +1,6 @@
 clear; clc; close all;
 
-fp = fopen("para.in","r");
+fp = fopen("../para.in","r");
 formatSpec = "%f %s";
 A = textscan(fp,formatSpec);
 fclose(fp); 
@@ -10,14 +10,12 @@ nz    = A{1}(3);
 
 
 
-c0   = 1;
-c1   = 60;
-c2   = 1000;
+c0   = 1800;
+c1   = 2200;
 
 
-c  = ones(nz,nx) * c0;
-%c(71:140,:) = c1;
-%c(141:end,:) = c2;
+c            = ones(nz,nx) * c0;
+c(200:end,:) = c1;
 
 
 fp = fopen("rho.bin","w");
