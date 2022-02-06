@@ -11,14 +11,13 @@ nt    = A{1}(1);
 nx    = A{1}(2);
 nz    = A{1}(3);
 isnap = A{1}(9);
-gWidth= A{1}(13);
-
-nx    = nx + 2 * gWidth;
+gWidth= A{1}(13)
+%nx    = nx + 2 * gWidth;
 ns    = round(nt / isnap);
+
 f = fopen('OUTPUT/field_1.bin','r');
 U = fread(f, 'float64');
 fclose(f);
-
 U = reshape(U,ns,nz,nx);
 
 
@@ -33,6 +32,6 @@ data(data < -ampclip)= -ampclip; % clipping positive
 for is=1:ns
     imagesc(reshape(data(is,:,:),nz,nx));   
     colormap(redblue);
-    pause(.099);
+    pause(.09) 
 end
 

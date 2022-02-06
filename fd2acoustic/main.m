@@ -1,4 +1,10 @@
 clear; close all; clc;
+try
+    delete 'fd2dacoustic.log'
+catch
+end
+
+
 diary 'fd2dacoustic.log'
 diary on
 disp('####################################################################')
@@ -23,12 +29,11 @@ isnap    = A{1}(9);
 nshot    = A{1}(10);
 shotz    = A{1}(11);
 nrec     = A{1}(12);
-gWidth   = A{1}(13);
-gWidthz  = A{1}(14);
-attConst = A{1}(15);
-
-sp    = floor((nx-2*gWidth)/(nrec));
-rec   = gWidth+1:sp:nx-gWidth-1;
+irec     = A{1}(13);
+zrec     = A{1}(14);
+gWidth   = A{1}(15);
+gWidthz  = A{1}(16);
+attConst = A{1}(17);
 
 sp    = floor(nx/nshot);
 shotp = gWidth:sp:nx-gWidth;
@@ -42,6 +47,14 @@ else
     isrc(2,:) = shotp;
 end
 
+% rec positions
+if nrec==1
+    rec   = irec;
+else
+    sp    = floor((nx-2*gWidth)/(nrec));
+    rec   = gWidth+1:sp:nx-gWidth-1;
+end
+
 fprintf('\n');
 disp('####################################################################')
 disp('####                  Simulation parameters:                    ####')
@@ -53,7 +66,7 @@ fprintf('####                  nx            ->   %d                          \n
 fprintf('####                  dz            ->   %d                          \n',nz);
 fprintf('####                  dx            ->   %d                          \n',nx);
 fprintf('####                  Ricker f0     ->   %d                          \n',f0);
-fprintf('####                  Sponge size   ->   %d                          \n',gWidth);
+fprintf('####         &        Sponge size   ->   %d                          \n',gWidth);
 fprintf('####                  Shots num     ->   %d                          \n',nshot);
 fprintf('####                  Receiver num  ->   %d                          \n',nrec);
 fprintf('####                  Snap interval ->   %d                          \n',isnap);
@@ -64,7 +77,7 @@ disp('####################################################################')
 disp('####                    Reading Model Files                     ####')
 disp('####################################################################')
 
-f     = fopen("Arid_vp","r");
+f     = fopen("ctrial.bin","r");
 c     = fread(f,"float32");
 fclose(f);
 
@@ -83,12 +96,13 @@ catch
 end
 lam_min = min(min(c))/(f0*2.5);
 gppw    = lam_min/dx;
-tol     = 10;
+tol     = 9;
 U       = zeros(round(nt/isnap),nz,nx);
 t       = 0:dt:nt*dt;
 T       = 1/f0;
 
 source  = (ricker(f0,nt,dt));
+
 
 fprintf('\n');
 disp('####################################################################')
@@ -96,9 +110,11 @@ disp('####                     CFL Creterion check                    ####')
 
 cfl = (dt/dx)*max(max(c));
 if (cfl>.9)
-    error('####             Simulation unstable, decrease dt.              ####');
+    error('####             Simulation unstable, decrease dt.         ####');
 else
-    disp('####                     Simulation is stable                   ####')
+    disp('####                     Simulation is stable               ####')
+ fprintf('####                     Courant number ->   %1.2f          #### \n',cfl);
+
 end
 disp('####################################################################')
 
@@ -143,10 +159,15 @@ disp('####################################################################')
 
 w1 = waitbar(0, 'Starting');
 
+    fprintf('\n');
+
+
 for is=1:nshot
-    
 
  
+    disp('####################################################################')
+    fprintf('####                      Shot number %d                        ####\n',is);
+    disp('####################################################################')
     w2 = waitbar(0, 'Starting');
     pos_w1=get(w1,'position');
     pos_w2=[pos_w1(1) pos_w1(2)+pos_w1(4) pos_w1(3) pos_w1(4)];
@@ -162,13 +183,13 @@ for is=1:nshot
     %####################################################################
     %####                      Begin time loop                       ####
     %####################################################################
-    
+  
     
     for it=2:nt
+
         unew = zeros(nz,nx);
-
-
         unew(isrc(1,is),isrc(2,is)) = unew(isrc(1),isrc(2)) + dt^2 * source(it);
+
 
         for ix=2:nx-1     
             for iz=2:nz-1
@@ -182,7 +203,7 @@ for is=1:nshot
         
         
         for ir=1:nrec
-            shot_g(it,ir) = unew(2,rec(ir));
+            shot_g(it,ir) = unew(zrec,rec(ir));
         end
         if (mod(it,isnap)==0)
 
@@ -201,7 +222,7 @@ for is=1:nshot
     %####################################################################
     
     filenameU  = strcat("OUTPUT/field_",mat2str(is),".bin");
-    filenameSG = strcat("OUTPUT/seism_",mat2str(is),".bin");
+    filenameSG = strcat("OUTPUT/seis_",mat2str(is),".bin");
     
     f1         = fopen(filenameU,"w");
     fwrite(f1,U,'float64');

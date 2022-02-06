@@ -1,0 +1,17 @@
+20000    nt
+1000     nx
+1000     nz
+.5     dx
+.5     dz
+2e-5     dt
+90        f0
+500      isrc  
+100       isnap 
+1        nshot
+60       shotz
+1        nrec
+100      irec
+60       zrec
+100      sponge
+100       sponge
+.65 att  constant
