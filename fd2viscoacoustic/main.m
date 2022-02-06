@@ -12,7 +12,7 @@
 %% z2 x2                                                                   %%
 %% .  .                                                                    %%
 %% zn xn                                                                   %%
-%%(same format for both source and receivers' acquisition geometery.       %%
+%% same format for both source and receivers' acquisition geometery.       %%
 %%                                                                         %%
 %% Output files (single precision) in OUTPUT/                              %% 
 %%                       snapshots | shot gather                           %%
