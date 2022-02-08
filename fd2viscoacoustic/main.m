@@ -50,6 +50,8 @@ npml     = A{1}(7);
 is_pml   = A{1}(8);
 is_FS    = A{1}(8);
 isnap    = A{1}(10);
+is_visco = A{1}(11);
+
 
 
 %####################################################################
@@ -211,7 +213,7 @@ sigmaZ  = zeros(nz,1);
 sigmaX  = zeros(nx,1);
 
 for ix=1:npml
-  sm          = real(ix-1)*dx/wPML;
+  sm       = real(ix-1)*dx/wPML;
   tmp(ix) = sigma_m*sm.^2;
 end
 
@@ -232,140 +234,269 @@ disp('####################################################################')
 
 fprintf('\n');
 
-for is=1:nshot
+if is_visco
+    for is=1:nshot
 
- 
-    disp('####################################################################')
-    fprintf('####                      Shot number %d                     ####\n',is);
-    disp('####################################################################')
-    
-    w1 = waitbar(0, 'Starting');
 
-    k      = 1;
-    seis_p =  zeros(nt,nrcv);  
-    seis_u = seis_p;
-    seis_w = seis_p;
-    u      = zeros(nz,nx);
-    p      = u; 
-    w      = u;
-    r      = u;
-    px     = p;
-    pz     = p;
-    U      = zeros(round(nt/isnap),nz,nx);
-    W      = zeros(round(nt/isnap),nz,nx);
-    P      = zeros(round(nt/isnap),nz,nx);
+        disp('####################################################################')
+        fprintf('####                      Shot number %d                     ####\n',is);
+        disp('####################################################################')
 
-    %####################################################################
-    %####                      Begin time loop                       ####
-    %####################################################################
-  
-    
-    for it=2:nt
+        w1 = waitbar(0, 'Starting');
 
-        
-        for iz=5:nz-4
+        k      = 1;
+        seis_p =  zeros(nt,nrcv);  
+        seis_u = seis_p;
+        seis_w = seis_p;
+        u      = zeros(nz,nx);
+        p      = u; 
+        w      = u;
+        r      = u;
+        px     = p;
+        pz     = p;
+        U      = zeros(round(nt/isnap),nz,nx);
+        W      = zeros(round(nt/isnap),nz,nx);
+        P      = zeros(round(nt/isnap),nz,nx);
+
+        %####################################################################
+        %####                      Begin time loop                       ####
+        %####################################################################
+
+
+        for it=1:nt
             for ix=5:nx-4
+                for iz=5:nz-4
 
-                temp      = K(iz,ix)*dt*(tau_epsi(iz,ix)/tau_sigma(iz,ix)-1.0)/dx/tau_sigma(iz,ix);
-                r(iz,ix)  =  (1.0-dt/tau_sigma(iz,ix))*r(iz,ix)-temp          * ...
-                            (c1*(u(iz,ix+1)-u(iz,ix)+w(iz,ix)-w(iz-1,ix))     + ...
-                             c2*(u(iz,ix+2)-u(iz,ix-1)+w(iz+1,ix)-w(iz-2,ix)) + ...
-                             c3*(u(iz,ix+3)-u(iz,ix-2)+w(iz+2,ix)-w(iz-3,ix)) + ...
-                             c4*(u(iz,ix+4)-u(iz,ix-3)+w(iz+3,ix)-w(iz-4,ix)));
-                      
-                temp      = K(iz,ix)*dt*tau_epsi(iz,ix)/dx/tau_sigma(iz,ix);
-                pz(iz,ix) = (1-dt*sigmaZ(iz)) * pz(iz,ix)-r(iz,ix)*dt-temp          * ...    
-                            (c1*(w(iz,ix)-w(iz-1,ix))  + c2*(w(iz+1,ix)-w(iz-2,ix)) + ...
-                             c3*(w(iz+2,ix)-w(iz-3,ix))+ c4*(w(iz+3,ix)-w(iz-4,ix)));
-            
-                px(iz,ix) = (1-dt*sigmaX(ix)) * px(iz,ix)-r(iz,ix)*dt-temp         * ...    
-                            (c1*(u(iz,ix+1)-u(iz,ix))  + c2*(u(iz,ix+2)-u(iz,ix-1))+ ...
-                             c3*(u(iz,ix+3)-u(iz,ix-2))+ c4*(u(iz,ix+4)-u(iz,ix-3)));
+                    temp      = K(iz,ix)*dt*(tau_epsi(iz,ix)/tau_sigma(iz,ix)-1.0)/dx/tau_sigma(iz,ix);
+                    r(iz,ix)  =  (1.0-dt/tau_sigma(iz,ix))*r(iz,ix)-temp          * ...
+                                (c1*(u(iz,ix+1)-u(iz,ix)+w(iz,ix)-w(iz-1,ix))     + ...
+                                 c2*(u(iz,ix+2)-u(iz,ix-1)+w(iz+1,ix)-w(iz-2,ix)) + ...
+                                 c3*(u(iz,ix+3)-u(iz,ix-2)+w(iz+2,ix)-w(iz-3,ix)) + ...
+                                 c4*(u(iz,ix+4)-u(iz,ix-3)+w(iz+3,ix)-w(iz-4,ix)));
 
-                p(iz,ix) = pz(iz,ix) + px(iz,ix); 
-                  
-                temp     = dt/(rho(iz,ix)*dx);
-                w(iz,ix) = (1-dt*sigmaZ(iz)) * w(iz,ix)-temp   *...
-                                    (c1*(p(iz+1,ix)-p(iz,ix))  +...
-                                     c2*(p(iz+2,ix)-p(iz-1,ix))+...  
-                                     c3*(p(iz+3,ix)-p(iz-2,ix))+...
-                                     c4*(p(iz+4,ix)-p(iz-3,ix)));
-                  
-                  
-                temp     = dt/(rho(iz,ix)*dx);
-                u(iz,ix) = (1-dt*sigmaX(ix)) * u(iz,ix) - temp  *...
-                                    (c1*(p(iz,ix)-p(iz,ix-1))   +...
-                                     c2*(p(iz,ix+1)-p(iz,ix-2)) +...  
-                                     c3*(p(iz,ix+2)-p(iz,ix-3)) +...
-                                     c4*(p(iz,ix+3)-p(iz,ix-4)));
+                    temp      = K(iz,ix)*dt*tau_epsi(iz,ix)/dx/tau_sigma(iz,ix);
+                    pz(iz,ix) = (1-dt*sigmaZ(iz)) * pz(iz,ix)-r(iz,ix)*dt-temp         * ...    
+                                (c1*(w(iz,ix)-w(iz-1,ix))  + c2*(w(iz+1,ix)-w(iz-2,ix))+ ...
+                                 c3*(w(iz+2,ix)-w(iz-3,ix))+ c4*(w(iz+3,ix)-w(iz-4,ix)));
 
+                    px(iz,ix) = (1-dt*sigmaX(ix)) * px(iz,ix)-r(iz,ix)*dt-temp         * ...    
+                                (c1*(u(iz,ix+1)-u(iz,ix))  + c2*(u(iz,ix+2)-u(iz,ix-1))+ ...
+                                 c3*(u(iz,ix+3)-u(iz,ix-2))+ c4*(u(iz,ix+4)-u(iz,ix-3)));
+
+                    p(iz,ix) = pz(iz,ix) + px(iz,ix); 
+
+                    temp     = dt/(rho(iz,ix)*dx);
+                    w(iz,ix) = (1-dt*sigmaZ(iz)) * w(iz,ix)-temp   *...
+                                        (c1*(p(iz+1,ix)-p(iz,ix))  +...
+                                         c2*(p(iz+2,ix)-p(iz-1,ix))+...  
+                                         c3*(p(iz+3,ix)-p(iz-2,ix))+...
+                                         c4*(p(iz+4,ix)-p(iz-3,ix)));
+
+
+                    temp     = dt/(rho(iz,ix)*dx);
+                    u(iz,ix) = (1-dt*sigmaX(ix)) * u(iz,ix) - temp  *...
+                                        (c1*(p(iz,ix)-p(iz,ix-1))   +...
+                                         c2*(p(iz,ix+1)-p(iz,ix-2)) +...  
+                                         c3*(p(iz,ix+2)-p(iz,ix-3)) +...
+                                         c4*(p(iz,ix+3)-p(iz,ix-4)));
+
+                end
             end
+
+            p(isrc(is),jsrc(is)) = p(isrc(is),isrc(is)) + dt * source(it);
+
+            if is_FS
+                p(5,:) = 0;
+                pz(5,:)= 0;
+                px(5,:)= 0;
+            end
+
+            for ir=1:nrcv
+                seis_p(it,ir) = p(ircv(ir),jrcv(ir));
+                seis_w(it,ir) = w(ircv(ir),jrcv(ir));
+                seis_u(it,ir) = u(ircv(ir),jrcv(ir));
+            end
+
+            if (mod(it,isnap)==0)
+                P(k,:,:) = p;
+                W(k,:,:) = w;
+                U(k,:,:) = u;
+                k = k + 1;
+            end
+            waitbar(it/nt, w1, sprintf('Computation: %d %% | shot %d of %d ', floor(it/nt*100),is,nshot));
         end
-        
-        p(isrc(is),jsrc(is)) = p(isrc(is),isrc(is)) + dt * source(it);
-        
-        if is_FS
-            p(5,:) = 0;
-            pz(5,:)= 0;
-            px(5,:)= 0;
-        end
-        
-        for ir=1:nrcv
-            seis_p(it,ir) = p(ircv(ir),jrcv(ir));
-            seis_w(it,ir) = w(ircv(ir),jrcv(ir));
-            seis_u(it,ir) = u(ircv(ir),jrcv(ir));
-        end
-        
-        if (mod(it,isnap)==0)
-            P(k,:,:) = p;
-            W(k,:,:) = w;
-            U(k,:,:) = u;
-            k = k + 1;
-        end
-        waitbar(it/nt, w1, sprintf('Computation: %d %% | shot %d of %d ', floor(it/nt*100),is,nshot));
+
+
+        %####################################################################
+        %####                      Output snapshot                       ####
+        %####                      & seismograms                         ####
+        %####################################################################
+
+        filenameU  = strcat("OUTPUT/field_P_",mat2str(is),".bin");
+        filenameSG = strcat("OUTPUT/seis_P_",mat2str(is),".bin");
+
+        f1         = fopen(filenameU,"w");
+        fwrite(f1,P,'float32');
+
+        f2         = fopen(filenameSG,"w");
+        fwrite(f2,seis_p,'float32');
+
+        fclose(f1); fclose(f2);
+
+
+        filenameU  = strcat("OUTPUT/field_W_",mat2str(is),".bin");
+        filenameSG = strcat("OUTPUT/seis_W_",mat2str(is),".bin");
+
+        f1         = fopen(filenameU,"w");
+        fwrite(f1,W,'float32');
+
+        f2         = fopen(filenameSG,"w");
+        fwrite(f2,seis_w,'float32');
+
+        fclose(f1); fclose(f2);
+
+        filenameU  = strcat("OUTPUT/field_U_",mat2str(is),".bin");
+        filenameSG = strcat("OUTPUT/seis_U_",mat2str(is),".bin");
+
+        f1         = fopen(filenameU,"w");
+        fwrite(f1,U,'float32');
+
+        f2         = fopen(filenameSG,"w");
+        fwrite(f2,seis_u,'float32');
+
+        fclose(f1); fclose(f2);
+
     end
     
     
-    %####################################################################
-    %####                      Output snapshot                       ####
-    %####                      & seismograms                         ####
-    %####################################################################
-   
-    filenameU  = strcat("OUTPUT/field_P_",mat2str(is),".bin");
-    filenameSG = strcat("OUTPUT/seis_P_",mat2str(is),".bin");
-    
-    f1         = fopen(filenameU,"w");
-    fwrite(f1,P,'float32');
-    
-    f2         = fopen(filenameSG,"w");
-    fwrite(f2,seis_p,'float32');
-    
-    fclose(f1); fclose(f2);
-    
-    
-    filenameU  = strcat("OUTPUT/field_W_",mat2str(is),".bin");
-    filenameSG = strcat("OUTPUT/seis_W_",mat2str(is),".bin");
-    
-    f1         = fopen(filenameU,"w");
-    fwrite(f1,W,'float32');
-    
-    f2         = fopen(filenameSG,"w");
-    fwrite(f2,seis_w,'float32');
-    
-    fclose(f1); fclose(f2);
-    
-    filenameU  = strcat("OUTPUT/field_U_",mat2str(is),".bin");
-    filenameSG = strcat("OUTPUT/seis_U_",mat2str(is),".bin");
-    
-    f1         = fopen(filenameU,"w");
-    fwrite(f1,U,'float32');
-    
-    f2         = fopen(filenameSG,"w");
-    fwrite(f2,seis_u,'float32');
-    
-    fclose(f1); fclose(f2);
+else
+    for is=1:nshot
+
+
+        disp('####################################################################')
+        fprintf('####                      Shot number %d                     ####\n',is);
+        disp('####################################################################')
+
+        w1 = waitbar(0, 'Starting');
+
+        k      = 1;
+        seis_p =  zeros(nt,nrcv);  
+        seis_u = seis_p;
+        seis_w = seis_p;
+        u      = zeros(nz,nx);
+        p      = u; 
+        w      = u;
+        px     = p;
+        pz     = p;
+        U      = zeros(round(nt/isnap),nz,nx);
+        W      = zeros(round(nt/isnap),nz,nx);
+        P      = zeros(round(nt/isnap),nz,nx);
+
+        %####################################################################
+        %####                      Begin time loop                       ####
+        %####################################################################
+
+
+        for it=1:nt
+            for ix=5:nx-4
+                for iz=5:nz-4
+
+                    
+                    pz(iz,ix) = (1-dt*sigmaZ(iz)) * pz(iz,ix)-K(iz,ix)*dt/dx           * ...    
+                                (c1*(w(iz,ix)-w(iz-1,ix))  + c2*(w(iz+1,ix)-w(iz-2,ix))+ ...
+                                 c3*(w(iz+2,ix)-w(iz-3,ix))+ c4*(w(iz+3,ix)-w(iz-4,ix)));
+
+                    px(iz,ix) = (1-dt*sigmaX(ix)) * px(iz,ix)-K(iz,ix)*dt/dx           * ...    
+                                (c1*(u(iz,ix+1)-u(iz,ix))  + c2*(u(iz,ix+2)-u(iz,ix-1))+ ...
+                                 c3*(u(iz,ix+3)-u(iz,ix-2))+ c4*(u(iz,ix+4)-u(iz,ix-3)));
+
+                    p(iz,ix)  = pz(iz,ix) + px(iz,ix); 
+
+                    temp      = dt/(rho(iz,ix)*dx);
+                    w(iz,ix)  = (1-dt*sigmaZ(iz)) * w(iz,ix)-temp  *...
+                                        (c1*(p(iz+1,ix)-p(iz,ix))  +...
+                                         c2*(p(iz+2,ix)-p(iz-1,ix))+...  
+                                         c3*(p(iz+3,ix)-p(iz-2,ix))+...
+                                         c4*(p(iz+4,ix)-p(iz-3,ix)));
+
+
+                    temp      = dt/(rho(iz,ix)*dx);
+                    u(iz,ix)  = (1-dt*sigmaX(ix)) * u(iz,ix) - temp *...
+                                        (c1*(p(iz,ix)-p(iz,ix-1))   +...
+                                         c2*(p(iz,ix+1)-p(iz,ix-2)) +...  
+                                         c3*(p(iz,ix+2)-p(iz,ix-3)) +...
+                                         c4*(p(iz,ix+3)-p(iz,ix-4)));
+
+                end
+            end
+
+            p(isrc(is),jsrc(is)) = p(isrc(is),isrc(is)) + dt * source(it);
+
+            if is_FS
+                p(5,:) = 0;
+                pz(5,:)= 0;
+                px(5,:)= 0;
+            end
+
+            for ir=1:nrcv
+                seis_p(it,ir) = p(ircv(ir),jrcv(ir));
+                seis_w(it,ir) = w(ircv(ir),jrcv(ir));
+                seis_u(it,ir) = u(ircv(ir),jrcv(ir));
+            end
+
+            if (mod(it,isnap)==0)
+                P(k,:,:) = p;
+                W(k,:,:) = w;
+                U(k,:,:) = u;
+                k = k + 1;
+            end
+            waitbar(it/nt, w1, sprintf('Computation: %d %% | shot %d of %d ', floor(it/nt*100),is,nshot));
+        end
+
+
+        %####################################################################
+        %####                      Output snapshot                       ####
+        %####                      & seismograms                         ####
+        %####################################################################
+
+        filenameU  = strcat("OUTPUT/field_P_",mat2str(is),".bin");
+        filenameSG = strcat("OUTPUT/seis_P_",mat2str(is),".bin");
+
+        f1         = fopen(filenameU,"w");
+        fwrite(f1,P,'float32');
+
+        f2         = fopen(filenameSG,"w");
+        fwrite(f2,seis_p,'float32');
+
+        fclose(f1); fclose(f2);
+
+
+        filenameU  = strcat("OUTPUT/field_W_",mat2str(is),".bin");
+        filenameSG = strcat("OUTPUT/seis_W_",mat2str(is),".bin");
+
+        f1         = fopen(filenameU,"w");
+        fwrite(f1,W,'float32');
+
+        f2         = fopen(filenameSG,"w");
+        fwrite(f2,seis_w,'float32');
+
+        fclose(f1); fclose(f2);
+
+        filenameU  = strcat("OUTPUT/field_U_",mat2str(is),".bin");
+        filenameSG = strcat("OUTPUT/seis_U_",mat2str(is),".bin");
+
+        f1         = fopen(filenameU,"w");
+        fwrite(f1,U,'float32');
+
+        f2         = fopen(filenameSG,"w");
+        fwrite(f2,seis_u,'float32');
+
+        fclose(f1); fclose(f2);
+
+    end
     
 end
+
 
 fprintf('\n');
 
